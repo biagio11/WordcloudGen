@@ -1,0 +1,18 @@
+name: wordcloud-env
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.11
+  - numpy
+  - matplotlib
+  - wordcloud
+  - nltk
+  - pip
+  - pip:
+    - pymupdf
+    - customtkinter
+    - CTkColorPicker
+    - CTkMessagebox
+    - CTkToolTip
+    - CTkListbox

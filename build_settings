@@ -1,0 +1,5 @@
+pyinstaller --noconfirm --onedir --windowed --add-data "C:/Users/biagi/miniconda3/envs/wordcloud-env/Lib/site-packages/customtkinter;customtkinter/" --add-data "C:/Users/biagi/miniconda3/envs/wordcloud-env/Lib/site-packages/CTkColorPicker;CTkColorPicker/" --add-data "C:/Users/biagi/miniconda3/envs/wordcloud-env/Lib/site-packages/CTkMessagebox;CTkMessagebox/" --add-data "C:/Users/biagi/miniconda3/envs/wordcloud-env/Lib/site-packages/CTkToolTip;CTkToolTip/" --add-data "C:/Users/biagi/miniconda3/envs/wordcloud-env/Lib/site-packages/wordcloud;wordcloud/" wordcloud_gen_GUI.py
+
+
+use >pip show packagename to show the paths for --add-data
+the "incriminated" packages are customtkinter, CTkColorPicker, CTkMessagebox, CTkToolTip, wordcloud
