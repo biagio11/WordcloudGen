@@ -73,42 +73,46 @@ python setup_nltk.py
    ```bash
    conda activate wordcloud-env
    ```
-
+   
    ### Option 1: Run the Wordcloud Generation Script
-
+   
    Run the script with the desired arguments. For example:
-
+   
    ```bash
    python wordcloud_gen.py --pdf path/to/document.pdf --lang english --exclude word1 word2 word3 --color_file path/to/colors.json --width 1920 --height 1080 --background white --font path/to/font.ttf
    ```
-
+   
    Alternatively, starting from a text file:
-
+   
    ```bash
    python wordcloud_gen.py --txt path/to/document.txt --lang english --exclude word1 word2 word3 --color_file path/to/colors.json --width 1920 --height 1080 --background white --font path/to/font.ttf
    ```
-
+   
    ### Option 2: Alternative approach: GUI
-
+   
    Simply use the GUI via the command line.
    Run the Wordcloud Generation Script
-      
-      ```bash
-      python wordcloud_gen_GUI.py
-      ```
+   
+   ```bash
+   python wordcloud_gen_GUI.py
+   ```
 
 If already built use the `wordcloud_gen.exe` executable.
 
 ## Build Settings
 
 If you would like to build the project into a standalone usable `.exe` file do the following:
+
 1. Show the paths for each required package with other dependencies using:
+   
    ```bash
    pip show packagename
    ```
+   
    You should check the paths for `customtkinter`, `CTkColorPicker`, `CTkMessagebox`, `CTkToolTip`, `CTkListbox`, `wordcloud`. Keep these paths as they will be used later.
 
 2. Install `pyinstaller`:
+   
    ```bash
    pip install pyinstaller
    ```
@@ -135,5 +139,9 @@ By following these steps, you should be able to generate a word cloud from a PDF
 
 ## License
 
-<p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/"><span property="dct:title">Wordcloud Gen</span> by <span property="cc:attributionName">biagio11</span> is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a></p>
+Wordcloud Gen by **Biagio11** is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0
 
+<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a>
+
+Feel free to contribute to this project by providing feedback, suggesting improvements, or submitting pull requests on [GitHub](https://github.com).
+Your contributions are appreciated!
