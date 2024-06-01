@@ -1,4 +1,4 @@
-# Wordcloud Generation
+# Wordcloud Generation (WordcloudGen)
 
 #### by biagio11
 
@@ -135,13 +135,26 @@ If you would like to build the project into a standalone usable `.exe` file do t
 
 ## Conclusion
 
-By following these steps, you should be able to generate a word cloud from a PDF or text file. This project demonstrates basic text processing and visualization techniques using Python.
+By following these steps, you should be able to generate a word cloud from a PDF or text file with your preferred settings.
+
+This project demonstrates basic text processing and visualization techniques using Python.
+
+## Contribution
+
+Your contributions are appreciated! :smile:
+If you find this project helpful or like it, don't forget to star it :star:
+
+Feel free to contribute to this project by providing feedback, suggesting improvements, opening [issues](https://github.com/biagio11/WordcloudGen/issues) or [pull requests](https://github.com/biagio11/WordcloudGen/pulls).
+For major changes, please open an issue first to discuss what you would like to change.
+
+Check out the **Contributors** section to see who has contributed to this project!
 
 ## License
 
-Wordcloud Gen by **Biagio11** is licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">CC BY-NC-SA 4.0
+![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1)
 
-<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1" alt=""><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1" alt=""></a>
+WordcloudGen by **biagio11** is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)
 
-Feel free to contribute to this project by providing feedback, suggesting improvements, or submitting pull requests on [GitHub](https://github.com).
-Your contributions are appreciated!
+### Contributors
+
+- [biagio11](https://github.com/biagio11)
