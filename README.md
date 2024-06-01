@@ -155,6 +155,6 @@ Check out the **Contributors** section to see who has contributed to this projec
 
 WordcloudGen by **biagio11** is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)
 
-### Contributors
+## Contributors
 
 - [biagio11](https://github.com/biagio11)
