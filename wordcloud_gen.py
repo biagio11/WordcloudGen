@@ -24,18 +24,19 @@ def extract_text_from_pdf(pdf_path):
 
 # Function to preprocess the text: tokenization, lemmatization, and removing stopwords
 def preprocess_text(text, lang, exclude_words):
-    nltk.download('punkt')
-    nltk.download('wordnet')
-    nltk.download('stopwords')
+    # Normalize the text to lowercase
+    text = text.lower()
 
     # Replace multi-word phrases with single tokens
     for phrase in exclude_words:
-        phrase = phrase.strip()
+        phrase = phrase.strip().lower()
         if ' ' in phrase:
             text = text.replace(phrase, '_'.join(phrase.split()))
+    #print("Text after replacing phrases:", text) # Debug
 
     # Tokenize the text
     tokens = nltk.word_tokenize(text)
+    #print("Tokens:", tokens) # Debug
 
     # Initialize lemmatizer
     lemmatizer = WordNetLemmatizer()
@@ -48,12 +49,20 @@ def preprocess_text(text, lang, exclude_words):
 
     # Lemmatize and remove stopwords and excluded words
     processed_tokens = [
-        lemmatizer.lemmatize(word.lower())
+        lemmatizer.lemmatize(word)
         for word in tokens
-        if word.isalpha() and word.lower() not in stop_words and word.lower() not in exclude_words_set
+        if word.isalpha() and word not in stop_words and word not in exclude_words_set
     ]
 
-    return ' '.join(processed_tokens).replace('_', ' ')
+    # Sort the processed tokens
+    sorted_tokens = sorted(processed_tokens)
+
+    # Join the processed tokens into a single string
+    processed_text = ' '.join(sorted_tokens).replace('_', ' ')
+
+    #print("Sorted Processed Tokens:", sorted_tokens) # Debug
+
+    return processed_text
 
 
 def color_func_from_file(color_file):
