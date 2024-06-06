@@ -38,7 +38,7 @@ Miniconda is a minimal installer for conda, a package manager, and an environmen
 3. Create the conda environment using the `environment.yml` file:
    
    ```bash
-   conda env create -f environment.yml
+   conda conda activate wordcloud-env
    ```
 
 4. Activate the conda environment:
@@ -98,6 +98,14 @@ python setup_nltk.py
    ```
 
 If already built use the `wordcloud_gen.exe` executable.
+
+**Note**:
+
+A known error when running `wordcloud_gen_GUI.py` is related to `pymupdf` library. To fix the issue try run the following command:
+
+```bash
+pip install --upgrade --force-reinstall pymupdf
+```
 
 ## Build Settings
 
