@@ -38,7 +38,7 @@ Miniconda is a minimal installer for conda, a package manager, and an environmen
 3. Create the conda environment using the `environment.yml` file:
    
    ```bash
-   conda conda activate wordcloud-env
+   conda env create -f environment.yml
    ```
 
 4. Activate the conda environment:
