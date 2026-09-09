@@ -1,18 +1,25 @@
+# Conda environment for WordcloudGen.
+#   conda env create -f environment.yml
+#   conda activate wordcloud-env
+#   python setup_nltk.py
+#
+# Prefer plain pip? Use requirements.txt instead.
 name: wordcloud-env
 channels:
-  - defaults
   - conda-forge
+  - defaults
 dependencies:
   - python=3.11
-  - numpy
-  - matplotlib
-  - wordcloud
-  - nltk
+  - numpy>=1.24
+  - matplotlib>=3.7
+  - pillow>=10.0
+  - wordcloud>=1.9.3
+  - nltk>=3.9
   - pip
   - pip:
-    - pymupdf
-    - customtkinter
-    - CTkColorPicker
-    - CTkMessagebox
-    - CTkToolTip
-    - CTkListbox
+      - pymupdf>=1.24
+      - customtkinter>=5.2
+      - CTkColorPicker>=0.9
+      - CTkMessagebox>=2.5
+      - CTkToolTip>=0.8
+      - CTkListbox>=1.3

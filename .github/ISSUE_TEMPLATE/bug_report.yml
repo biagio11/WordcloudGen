@@ -1,0 +1,42 @@
+name: Bug report
+description: Something does not work as expected
+labels: ["bug"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: How to reproduce it
+      description: The exact command you ran, or the steps you took in the app.
+      placeholder: python wordcloud_gen.py --txt input/demo.txt --lang english
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Error output
+      description: Paste the full traceback, if there was one.
+      render: text
+  - type: dropdown
+    id: how
+    attributes:
+      label: How are you running it?
+      options:
+        - The packaged Windows .exe
+        - From source (pip)
+        - From source (conda)
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: OS and Python version
+      placeholder: "Windows 11, Python 3.11.9"
+    validations:
+      required: true

@@ -1,165 +1,88 @@
+"""Command-line entry point for WordcloudGen.
+
+Example:
+    python wordcloud_gen.py --txt input/demo.txt --color_file colors/vibrant_colors.json
+"""
+
 import argparse
-from datetime import datetime
-import json
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-import pymupdf
-import fitz
-import nltk
-from nltk.stem import WordNetLemmatizer
-from nltk.corpus import stopwords
-from wordcloud import WordCloud
+import sys
 
-# Function to extract text from a PDF file
+from wordcloudgen import __version__
+from wordcloudgen.core import (
+    SUPPORTED_LANGUAGES,
+    generate_word_cloud,
+    show_word_cloud,
+)
 
 
-def extract_text_from_pdf(pdf_path):
-    document = pymupdf.open(pdf_path)
-    text = ""
-    for page in document:
-        text += page.get_text()
-    return text
-
-
-# Function to preprocess the text: tokenization, lemmatization, and removing stopwords
-def preprocess_text(text, lang, exclude_words):
-    # Normalize the text to lowercase
-    text = text.lower()
-
-    # Replace multi-word phrases with single tokens
-    for phrase in exclude_words:
-        phrase = phrase.strip().lower()
-        if ' ' in phrase:
-            text = text.replace(phrase, '_'.join(phrase.split()))
-    #print("Text after replacing phrases:", text) # Debug
-
-    # Tokenize the text
-    tokens = nltk.word_tokenize(text)
-    #print("Tokens:", tokens) # Debug
-
-    # Initialize lemmatizer
-    lemmatizer = WordNetLemmatizer()
-
-    # Get stopwords for the specified language
-    stop_words = set(stopwords.words(lang))
-
-    # Convert exclude_words to a set with underscores replacing spaces
-    exclude_words_set = set(word.strip().lower() for word in exclude_words)
-
-    # Lemmatize and remove stopwords and excluded words
-    processed_tokens = [
-        lemmatizer.lemmatize(word)
-        for word in tokens
-        if word.isalpha() and word not in stop_words and word not in exclude_words_set
-    ]
-
-    # Sort the processed tokens
-    sorted_tokens = sorted(processed_tokens)
-
-    # Join the processed tokens into a single string
-    processed_text = ' '.join(sorted_tokens).replace('_', ' ')
-
-    #print("Sorted Processed Tokens:", sorted_tokens) # Debug
-
-    return processed_text
-
-
-def color_func_from_file(color_file):
-    # Default colors
-    default_colors = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728',
-                      '#9467bd', '#8c564b', '#e377c2', '#7f7f7f', '#bcbd22', '#17becf']
-
-    # Create the ./colors folder if it doesn't exist
-    os.makedirs('./colors', exist_ok=True)
-
-    # Path to the default colors file
-    default_colors_file = './colors/default_colors.json'
-
-    # If color_file is None, generate a default colors file
-    if color_file is None:
-        with open(default_colors_file, 'w') as f:
-            json.dump({"colors": default_colors}, f, indent=4)
-        print(f"Default colors file generated: {default_colors_file}")
-        color_file = default_colors_file
-    else:
-        # If the specified color file doesn't exist, use the default colors
-        if not os.path.exists(color_file):
-            print(
-                f"{color_file} not found. Using default colors from {default_colors_file}.")
-            color_file = default_colors_file
-
-    # Load colors from the specified file
-    with open(color_file, 'r') as f:
-        colors = json.load(f).get("colors", default_colors)
-
-    return lambda *args, **kwargs: np.random.choice(colors)
-
-
-def main():
-    # Parse command-line arguments
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description='Generate a word cloud from a PDF or text file.')
-    parser.add_argument('--pdf', type=str, help='Path to the PDF file.')
-    parser.add_argument('--txt', type=str, help='Path to the text file.')
-    parser.add_argument('--lang', type=str, default='english',
-                        help='Language for stopwords.')
-    parser.add_argument('--width', type=int, default=1920,
-                        help='Width of the word cloud image.')
-    parser.add_argument('--height', type=int, default=1080,
-                        help='Height of the word cloud image.')
-    parser.add_argument('--background', type=str, default='white',
-                        help='Background color of the word cloud (e.g., "white", "black", or "transparent").')
-    parser.add_argument('--font', type=str, help='Path to the font file.')
-    parser.add_argument('--exclude-words', type=str, nargs='*', default=[],
-                        help='List of words to exclude from the word cloud.')
-    parser.add_argument('--color_file', type=str,
-                        help='Path to a JSON file containing colors.')
+        prog="wordcloud_gen",
+        description="Generate a word cloud from a PDF or text file.",
+    )
+    parser.add_argument("--version", action="version", version=f"WordcloudGen {__version__}")
 
-    args = parser.parse_args()
+    source = parser.add_mutually_exclusive_group(required=True)
+    source.add_argument("--pdf", type=str, help="Path to the PDF file.")
+    source.add_argument("--txt", type=str, help="Path to the text file.")
 
-    # Ensure a PDF or text file is provided
-    if not args.pdf and not args.txt:
-        print("Error: Please provide a PDF or text file.")
-        return
+    parser.add_argument("--lang", type=str, default="english",
+                        choices=SUPPORTED_LANGUAGES,
+                        help="Language of the document, used for stopwords.")
+    parser.add_argument("--width", type=int, default=1920,
+                        help="Width of the word cloud image in pixels.")
+    parser.add_argument("--height", type=int, default=1080,
+                        help="Height of the word cloud image in pixels.")
+    parser.add_argument("--background", type=str, default="white",
+                        help='Background color, e.g. "white", "#101820" or "transparent".')
+    parser.add_argument("--font", type=str,
+                        help="Path to a .ttf or .otf font file.")
+    parser.add_argument("--exclude-words", "--exclude", dest="exclude_words",
+                        type=str, nargs="*", default=[],
+                        help="Words or quoted phrases to leave out of the cloud.")
+    parser.add_argument("--color_file", "--colors", dest="color_file", type=str,
+                        help="JSON palette file shaped like {\"colors\": [\"#rrggbb\", ...]}.")
+    parser.add_argument("--output-dir", type=str, default="output",
+                        help="Folder the PNG is written to (created if missing).")
+    parser.add_argument("--max-words", type=int, default=200,
+                        help="Maximum number of words to draw.")
+    parser.add_argument("--collocations", action="store_true",
+                        help="Allow two-word phrases in the cloud.")
+    parser.add_argument("--seed", type=int,
+                        help="Random seed, for reproducible layouts and colors.")
+    parser.add_argument("--no-show", action="store_true",
+                        help="Save the image without opening a preview window.")
+    return parser
 
-    # Extract text from the appropriate file
-    if args.pdf:
-        text = extract_text_from_pdf(args.pdf)
-    else:
-        with open(args.txt, 'r', encoding='utf-8') as file:
-            text = file.read()
 
-    # Preprocess the text
-    processed_text = preprocess_text(text, args.lang, args.exclude_words)
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
 
-    # Select color function
-    color_func = color_func_from_file(color_file)
+    try:
+        cloud, filename = generate_word_cloud(
+            input_path=args.pdf or args.txt,
+            lang=args.lang,
+            width=args.width,
+            height=args.height,
+            background=args.background,
+            font=args.font,
+            exclude_words=args.exclude_words,
+            output_dir=args.output_dir,
+            color_file=args.color_file,
+            collocations=args.collocations,
+            seed=args.seed,
+            max_words=args.max_words,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
 
-    # Generate the word cloud
-    wordcloud = WordCloud(
-        width=args.width,
-        height=args.height,
-        background_color='rgba(255, 255, 255, 0)' if args.background == 'transparent' else args.background,
-        mode='RGBA' if args.background == 'transparent' else 'RGB',
-        font_path=args.font,
-        color_func=color_func
-    ).generate(processed_text)
-
-    # Generate timestamp
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-    # Save to file with timestamp
-    filename = f"./output/wordcloud_{timestamp}.png"
-    wordcloud.to_file(filename)
     print(f"Word cloud saved as {filename}")
 
-    # Display the word cloud
-    plt.figure(figsize=(args.width / 100, args.height / 100))
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis('off')  # Remove axes
-    plt.show()
+    if not args.no_show:
+        show_word_cloud(cloud, args.width, args.height)
+    return 0
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    raise SystemExit(main())

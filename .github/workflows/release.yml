@@ -1,0 +1,95 @@
+name: Release
+
+# Builds the standalone Windows app and attaches it to a GitHub Release.
+#
+#   git tag v1.0.0
+#   git push origin v1.0.0
+#
+# Or run it by hand from the Actions tab to get a downloadable artifact
+# without publishing a release.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    name: Build Windows executable
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Build the executable
+        run: python build_exe.py
+
+      - name: Verify the build produced an executable
+        shell: pwsh
+        run: |
+          $exe = "dist/WordcloudGen/WordcloudGen.exe"
+          if (-not (Test-Path $exe)) { throw "Build failed: $exe is missing" }
+          $size = (Get-ChildItem dist/WordcloudGen -Recurse -File |
+                   Measure-Object Length -Sum).Sum / 1MB
+          "Built {0:N0} MB" -f $size
+
+      - name: Check it runs without the developer's NLTK cache
+        shell: pwsh
+        run: |
+          # Point HOME/APPDATA at an empty folder so the app can only succeed
+          # using the corpora bundled inside it.
+          $fake = Join-Path $env:RUNNER_TEMP "empty-home"
+          New-Item -ItemType Directory -Force -Path $fake | Out-Null
+          $env:USERPROFILE = $fake; $env:APPDATA = $fake; $env:HOME = $fake
+          & dist/WordcloudGen/WordcloudGen.exe --selftest
+          if ($LASTEXITCODE -ne 0) { throw "The packaged app failed its self-test" }
+          if (Get-ChildItem $fake -Recurse -File -EA SilentlyContinue) {
+            throw "The app downloaded corpora at runtime; they should be bundled"
+          }
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          if (-not $version.StartsWith("v")) { $version = "dev" }
+          Compress-Archive -Path dist/WordcloudGen/* `
+                           -DestinationPath "WordcloudGen-$version-windows-x64.zip"
+          echo "ASSET=WordcloudGen-$version-windows-x64.zip" >> $env:GITHUB_ENV
+
+      - name: Upload the build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WordcloudGen-windows
+          path: ${{ env.ASSET }}
+          retention-days: 14
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ env.ASSET }}
+          generate_release_notes: true
+          draft: true
+          body: |
+            ## WordcloudGen ${{ github.ref_name }}
+
+            ### Download
+
+            Grab `${{ env.ASSET }}` below, unzip it anywhere, and run
+            **WordcloudGen.exe**. No Python install required.
+
+            Windows SmartScreen may warn about an unsigned app the first time:
+            choose *More info* then *Run anyway*.

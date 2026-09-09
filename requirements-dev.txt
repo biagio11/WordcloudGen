@@ -1,0 +1,8 @@
+# Extra tooling for contributors and for building the Windows executable.
+#   pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+pytest>=8.0
+ruff>=0.6
+pyinstaller>=6.6

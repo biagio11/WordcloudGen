@@ -1,0 +1,16 @@
+# Runtime dependencies for WordcloudGen.
+#   pip install -r requirements.txt
+
+numpy>=1.24
+matplotlib>=3.7
+wordcloud>=1.9.3
+nltk>=3.9
+pymupdf>=1.24
+pillow>=10.0
+
+# GUI only
+customtkinter>=5.2
+CTkColorPicker>=0.9
+CTkMessagebox>=2.5
+CTkToolTip>=0.8
+CTkListbox>=1.3
