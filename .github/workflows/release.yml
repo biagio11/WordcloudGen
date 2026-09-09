@@ -52,11 +52,24 @@ jobs:
           # Point HOME/APPDATA at an empty folder so the app can only succeed
           # using the corpora bundled inside it.
           $fake = Join-Path $env:RUNNER_TEMP "empty-home"
+          Remove-Item $fake -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force -Path $fake | Out-Null
           $env:USERPROFILE = $fake; $env:APPDATA = $fake; $env:HOME = $fake
-          & dist/WordcloudGen/WordcloudGen.exe --selftest
-          if ($LASTEXITCODE -ne 0) { throw "The packaged app failed its self-test" }
-          if (Get-ChildItem $fake -Recurse -File -EA SilentlyContinue) {
+
+          # WordcloudGen.exe is a windowed (GUI subsystem) binary. PowerShell's
+          # call operator does not block on those, so $LASTEXITCODE would be read
+          # before the app had even finished. Start-Process -Wait does block.
+          $run = Start-Process -FilePath "dist\WordcloudGen\WordcloudGen.exe" `
+                               -ArgumentList "--selftest" -Wait -PassThru
+          if ($run.ExitCode -ne 0) {
+            throw "The packaged app failed its self-test (exit $($run.ExitCode))"
+          }
+
+          # Only corpora count as a leak here; unrelated libraries are entitled
+          # to write their own caches into HOME.
+          $leaked = Get-ChildItem $fake -Recurse -File -ErrorAction SilentlyContinue |
+                    Where-Object { $_.FullName -like "*nltk_data*" }
+          if ($leaked) {
             throw "The app downloaded corpora at runtime; they should be bundled"
           }
 
