@@ -1,167 +1,290 @@
-# Wordcloud Generation (WordcloudGen)
+<div align="center">
 
-#### by biagio11
+# WordcloudGen
 
-This is a simple Python project to generate word clouds from a PDF or text file using Python. The project leverages various libraries such as `pymupdf` for PDF processing, `nltk` for text preprocessing, and `wordcloud` for generating the word cloud image. The GUI version uses `customtkinter` and other related packages.
+**Turn any PDF or text file into a word cloud — from a desktop app or the command line.**
 
-## Project Overview
+[![CI](https://github.com/biagio11/WordcloudGen/actions/workflows/ci.yml/badge.svg)](https://github.com/biagio11/WordcloudGen/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/biagio11/WordcloudGen?label=download)](https://github.com/biagio11/WordcloudGen/releases/latest)
+[![Python](https://img.shields.io/badge/python-3.10%20%E2%80%93%203.12-blue)](https://www.python.org/)
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/license-CC%20BY--NC--SA%204.0-lightgrey)](LICENSE)
 
-The project script performs the following tasks:
+<img src="docs/gallery/script-southland.png" alt="A word cloud rendered in a flowing script font" width="720">
 
-1. Extracts text from a PDF or a text file.
-2. Preprocesses the text by tokenizing, lemmatizing, and removing stopwords.
-3. Generates a word cloud image using the processed text.
-4. Saves the word cloud image with a timestamp.
-5. Provides a GUI for easy interaction and word cloud generation.
+</div>
 
-The project is structured into 4 main folders i.e. `input`, `output`, `fonts`, `colors`. Don't delete this folders if you are using the command line.
+---
 
-## Installation
+## What it does
 
-### Step 1: Install Miniconda
+Point WordcloudGen at a document and it will:
 
-Miniconda is a minimal installer for conda, a package manager, and an environment management system. To install Miniconda, follow these steps:
+1. **Extract** the text — from a PDF (via PyMuPDF) or a plain `.txt` file.
+2. **Clean** it — lowercase, tokenize, lemmatize, and strip stopwords in your document's language.
+3. **Render** a word cloud in the size, palette, font and background you choose.
+4. **Save** it as a timestamped PNG, with real alpha if you pick a transparent background.
 
-1. Download the Miniconda installer for your operating system from the [official Miniconda page](https://docs.conda.io/en/latest/miniconda.html).
-2. Run the installer and follow the instructions to complete the installation.
+Two front ends share one engine, so both behave identically: a **desktop app** with a live preview, and a **CLI** for scripting and batch work.
 
-### Step 2: Set Up the Conda Environment
+---
 
-1. Open the Miniconda command line.
+## Gallery
 
-2. Navigate to the project folder using:
-   
-   ```bash
-   cd C:/your/project/path
-   ```
+Every image below comes from the same paragraph of sample text in [`input/demo.txt`](input/demo.txt) — only the font, palette and background changed.
 
-3. Create the conda environment using the `environment.yml` file:
-   
-   ```bash
-   conda env create -f environment.yml
-   ```
+| | |
+|:-:|:-:|
+| <img src="docs/gallery/classic.png" alt="Default palette on white" width="400"> | <img src="docs/gallery/vibrant-dark.png" alt="Vibrant palette on a dark background" width="400"> |
+| `default_colors.json` · white | `vibrant_colors.json` · `#101820` |
+| <img src="docs/gallery/earthy-timeless.png" alt="Earthy palette in a serif font" width="400"> | <img src="docs/gallery/pastel-night.png" alt="Pastel palette on a midnight background" width="400"> |
+| `earthy_colors.json` · Timeless | `pastel_colors.json` · Quicksand |
 
-4. Activate the conda environment:
-   
-   ```bash
-   conda activate wordcloud-env
-   ```
+---
 
-***NOTE***: after the first installation you can skip the **3rd** point.
+## Get it
 
-### Step 3: Download NLTK Data
+### Option 1 — Download the app (Windows, no Python needed)
 
-The script requires certain NLTK data to function correctly.
-Run the script `setup-nltk.py` to download the necessary NLTK data:
+Grab the latest `WordcloudGen-vX.Y.Z-windows-x64.zip` from the
+**[Releases page](https://github.com/biagio11/WordcloudGen/releases/latest)**, unzip it
+anywhere, and run **`WordcloudGen.exe`**.
+
+> Windows SmartScreen may warn about an unsigned app the first time.
+> Choose **More info → Run anyway**.
+
+Generated images land in an `output/` folder next to the executable.
+
+### Option 2 — Run from source
 
 ```bash
+git clone https://github.com/biagio11/WordcloudGen.git
+cd WordcloudGen
+```
+
+<details open>
+<summary><b>With pip (any OS)</b></summary>
+
+```bash
+python -m venv .venv
+# Windows:        .venv\Scripts\activate
+# macOS / Linux:  source .venv/bin/activate
+
+pip install -r requirements.txt
 python setup_nltk.py
 ```
 
-## Usage
+</details>
 
-1. Open the Miniconda command line.
-
-2. Navigate to the project folder using:
-   
-   ```bash
-   cd C:/your/project/path
-   ```
-
-3. Activate the conda environment:
-   
-   ```bash
-   conda activate wordcloud-env
-   ```
-   
-   ### Option 1: Run the Wordcloud Generation Script
-   
-   Run the script with the desired arguments. For example:
-   
-   ```bash
-   python wordcloud_gen.py --pdf path/to/document.pdf --lang english --exclude word1 word2 word3 --color_file path/to/colors.json --width 1920 --height 1080 --background white --font path/to/font.ttf
-   ```
-   
-   Alternatively, starting from a text file:
-   
-   ```bash
-   python wordcloud_gen.py --txt path/to/document.txt --lang english --exclude word1 word2 word3 --color_file path/to/colors.json --width 1920 --height 1080 --background white --font path/to/font.ttf
-   ```
-   
-   ### Option 2: Alternative approach: GUI
-   
-   Simply use the GUI via the command line.
-   Run the Wordcloud Generation Script
-   
-   ```bash
-   python wordcloud_gen_GUI.py
-   ```
-
-If already built use the `wordcloud_gen.exe` executable.
-
-**Note**:
-
-A known error when running `wordcloud_gen_GUI.py` is related to `pymupdf` library. To fix the issue try run the following command:
+<details>
+<summary><b>With conda</b></summary>
 
 ```bash
+conda env create -f environment.yml
+conda activate wordcloud-env
+python setup_nltk.py
+```
+
+After the first time, `conda activate wordcloud-env` is all you need.
+
+</details>
+
+`setup_nltk.py` downloads the NLTK corpora (tokenizers, stopwords, WordNet). It runs
+automatically on first use too — this just gets it out of the way up front.
+
+---
+
+## Use it
+
+### The desktop app
+
+```bash
+python wordcloud_gen_GUI.py
+```
+
+<div align="center">
+<img src="docs/screenshot-gui.png" alt="The WordcloudGen desktop app, showing the settings panel and a rendered preview" width="860">
+</div>
+
+Pick a document, adjust anything you like, and press **Generate Word Cloud**. The result
+appears in the preview panel and is saved to your output folder. Rendering happens on a
+background thread, so the window stays responsive on long PDFs.
+
+### The command line
+
+```bash
+python wordcloud_gen.py --txt input/demo.txt
+```
+
+A fuller example:
+
+```bash
+python wordcloud_gen.py \
+  --pdf paper.pdf \
+  --lang english \
+  --width 2560 --height 1440 \
+  --background transparent \
+  --font "fonts/Quicksand_Light.otf" \
+  --color_file colors/vibrant_colors.json \
+  --exclude-words figure table "et al" \
+  --seed 42
+```
+
+| Option | Default | What it does |
+|---|---|---|
+| `--pdf` / `--txt` | *required* | The source document (exactly one of the two). |
+| `--lang` | `english` | Language used for the stopword list. |
+| `--width` / `--height` | `1920` / `1080` | Output size in pixels. |
+| `--background` | `white` | Color name, hex value, or `transparent` for real alpha. |
+| `--font` | library default | Path to a `.ttf` or `.otf`. See [`fonts/`](fonts). |
+| `--color_file` | built-in palette | JSON palette. See [`colors/`](colors). |
+| `--exclude-words` | *none* | Words to drop. Quote multi-word phrases: `"et al"`. |
+| `--max-words` | `200` | How many words to draw. |
+| `--collocations` | off | Allow two-word phrases in the cloud. |
+| `--seed` | random | Fix the layout and colors so a run is reproducible. |
+| `--output-dir` | `output` | Where the PNG is written (created if missing). |
+| `--no-show` | off | Save without opening a preview window — useful in scripts. |
+
+Run `python wordcloud_gen.py --help` for the full list.
+
+### Custom palettes
+
+A palette is a JSON file listing hex colors; words are drawn from it at random.
+
+```json
+{
+  "colors": ["#ebbf0d", "#2f9d00", "#cb6ce6", "#ff5757", "#008ada"]
+}
+```
+
+Drop your own into [`colors/`](colors) and pass it with `--color_file`, or build one
+visually in the app with **Add** / **Remove** and reuse the file it saves.
+
+---
+
+## Project layout
+
+```
+WordcloudGen/
+├── wordcloudgen/          # the shared engine (text → cloud)
+│   └── core.py
+├── wordcloud_gen.py       # CLI front end
+├── wordcloud_gen_GUI.py   # desktop front end
+├── build_exe.py           # builds the standalone Windows app
+├── setup_nltk.py          # downloads the NLTK corpora
+├── tests/                 # pytest suite
+├── colors/                # palette presets (JSON)
+├── fonts/                 # bundled fonts
+├── input/                 # sample documents
+└── output/                # generated images land here
+```
+
+Both front ends are thin wrappers around `wordcloudgen/core.py`, so a fix in the engine
+reaches the CLI and the app at once.
+
+---
+
+## Build the executable yourself
+
+```bash
+pip install -r requirements-dev.txt
+python build_exe.py
+```
+
+This downloads the NLTK corpora, trims the ones the app can't reach, runs PyInstaller
+against [`wordcloud_gen_GUI.spec`](wordcloud_gen_GUI.spec), and then self-tests the
+result by rendering a cloud without opening a window. The app appears in
+`dist/WordcloudGen/`.
+
+The spec resolves every package path at build time, so there is nothing machine-specific
+to edit. If a frozen build misbehaves, rebuild with a console attached to see the
+traceback:
+
+```bash
+WORDCLOUDGEN_CONSOLE=1 python build_exe.py
+```
+
+Pushing a tag builds and publishes a release automatically:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+---
+
+## Development
+
+```bash
+pip install -r requirements-dev.txt
+pytest          # run the test suite
+ruff check .    # lint
+```
+
+CI runs the tests on Windows and Linux across Python 3.10–3.12.
+
+---
+
+## Troubleshooting
+
+<details>
+<summary><b><code>ModuleNotFoundError: No module named 'frontend'</code> from PyMuPDF</b></summary>
+
+A stale or conflicting install. Reinstall it cleanly:
+
+```bash
+pip uninstall -y fitz pymupdf
 pip install --upgrade --force-reinstall pymupdf
 ```
 
-## Build Settings
+The old `fitz` package on PyPI is unrelated to PyMuPDF and shadows it.
 
-If you would like to build the project into a standalone usable `.exe` file do the following:
+</details>
 
-1. Show the paths for each required package with other dependencies using:
-   
-   ```bash
-   pip show packagename
-   ```
-   
-   You should check the paths for `customtkinter`, `CTkColorPicker`, `CTkMessagebox`, `CTkToolTip`, `CTkListbox`, `wordcloud`. Keep these paths as they will be used later.
+<details>
+<summary><b><code>LookupError: Resource punkt not found</code></b></summary>
 
-2. Install `pyinstaller`:
-   
-   ```bash
-   pip install pyinstaller
-   ```
+The NLTK corpora were not downloaded. Run `python setup_nltk.py`. Behind a proxy with a
+self-signed certificate, that script relaxes SSL verification for you.
 
-3. Build the application (if you used Miniconda):
-   
-   ```bash
-   pyinstaller --noconfirm --onedir --windowed --add-data "C:/Users/user/miniconda3/envs/wordcloud-env/Lib/site-packages/customtkinter;customtkinter/" --add-data ... wordcloud_gen_GUI.py
-   ```
+</details>
 
-4. Add the `--add-data` flag for each package (`customtkinter`, `CTkColorPicker`, `CTkMessagebox`, `CTkToolTip`,`CTkListbox`, `wordcloud`) using:
-   
-   ```bash
-   --add-data "C:/package/path/packagename;packagename/"
-   ```
+<details>
+<summary><b>The cloud comes out empty</b></summary>
 
-5. Run the command and wait for the build. After the building process, navigate to the `dist` folder. Inside the folder named `wordcloud_gen_GUI`, you will find the executable named `wordcloud_gen_GUI.exe`.
+Every word was filtered out. Check that `--lang` matches the document's actual language,
+and that your exclusion list isn't too broad. Scanned PDFs hold images rather than text —
+run OCR first.
 
-6. For easy access, drag and drop the input, output, and font folders outside the main folder (the one where the `.exe` file is placed).
+</details>
 
-## Conclusion
+<details>
+<summary><b>The transparent background looks white</b></summary>
 
-By following these steps, you should be able to generate a word cloud from a PDF or text file with your preferred settings.
+The PNG does have an alpha channel; most image viewers just paint white behind it. Open
+it in an editor, or place it over a colored background, to confirm.
 
-This project demonstrates basic text processing and visualization techniques using Python.
+</details>
 
-## Contribution
+---
 
-Your contributions are appreciated! :smile:
-If you find this project helpful or like it, don't forget to star it :star:
+## Contributing
 
-Feel free to contribute to this project by providing feedback, suggesting improvements, opening [issues](https://github.com/biagio11/WordcloudGen/issues) or [pull requests](https://github.com/biagio11/WordcloudGen/pulls).
-For major changes, please open an issue first to discuss what you would like to change.
+Contributions are welcome. Open an
+[issue](https://github.com/biagio11/WordcloudGen/issues) or a
+[pull request](https://github.com/biagio11/WordcloudGen/pulls) — for larger changes,
+please start with an issue so we can discuss the direction. See
+[CONTRIBUTING.md](CONTRIBUTING.md) for the details.
 
-Check out the **Contributors** section to see who has contributed to this project!
+If this project is useful to you, a ⭐ is appreciated.
 
 ## License
 
-![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1) ![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1)
+[![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1)](LICENSE) [![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1)](LICENSE) [![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/nc.svg?ref=chooser-v1)](LICENSE) [![CC BY-NC-SA 4.0](https://mirrors.creativecommons.org/presskit/icons/sa.svg?ref=chooser-v1)](LICENSE)
 
-WordcloudGen by **biagio11** is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1)
+WordcloudGen by **biagio11** is licensed under
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/?ref=chooser-v1).
+
+The fonts in [`fonts/`](fonts) are covered by their own licenses, not by this project's.
 
 ## Contributors
 

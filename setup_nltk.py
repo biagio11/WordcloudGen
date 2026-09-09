@@ -1,30 +1,42 @@
-# Add this code after your imports in both files
-import nltk
+"""Download the NLTK corpora WordcloudGen needs.
+
+    python setup_nltk.py
+
+Both front ends also call this automatically on first use; run it by hand when
+you want to prime the cache ahead of time or verify network access.
+"""
+
 import ssl
+import sys
 
-# Fix SSL certificate issues if they occur
-try:
-    _create_unverified_https_context = ssl._create_unverified_context
-except AttributeError:
-    pass
-else:
-    ssl._create_default_https_context = _create_unverified_https_context
+from wordcloudgen.core import NLTK_PACKAGES, ensure_nltk_data, have_nltk_data
 
-# Download required NLTK data
-def download_nltk_data():
-    required_data = [
-        'punkt',           # Tokenizer
-        'stopwords',       # Stop words
-        'wordnet',         # WordNet lemmatizer
-        'punkt_tab',       # Updated punkt tokenizer
-        'averaged_perceptron_tagger'  # POS tagger (might be needed)
-    ]
-    
-    for data in required_data:
-        try:
-            nltk.download(data, quiet=True)
-        except Exception as e:
-            print(f"Could not download {data}: {e}")
 
-# Call this function before using any NLTK features
-download_nltk_data()
+def relax_ssl_if_needed() -> None:
+    """Work around corporate proxies with unverifiable certificates."""
+    try:
+        ssl._create_default_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+
+
+def main() -> int:
+    relax_ssl_if_needed()
+    print("Downloading NLTK data: " + ", ".join(NLTK_PACKAGES))
+    ensure_nltk_data(quiet=False)
+
+    import nltk
+
+    # Reuse the engine's own check, so this script and the app can never
+    # disagree about whether the data is usable.
+    if not have_nltk_data(nltk):
+        print("\nSome corpora are still missing.", file=sys.stderr)
+        print("Check your internet connection and try again.", file=sys.stderr)
+        return 1
+
+    print("\nAll set. You can now run wordcloud_gen.py or wordcloud_gen_GUI.py.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
