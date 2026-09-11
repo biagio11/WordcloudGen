@@ -58,6 +58,10 @@ jobs:
 
       - name: Smoke-test the CLI
         run: >
-          python wordcloud_gen.py --txt input/demo.txt
+          python wordcloud_gen.py input/demo.txt
           --color_file colors/vibrant_colors.json
           --width 800 --height 450 --seed 1 --no-show
+
+      - name: Smoke-test the desktop app's engine
+        if: runner.os == 'Windows'
+        run: python wordcloud_gen_GUI.py --selftest

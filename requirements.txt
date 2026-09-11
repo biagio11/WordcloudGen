@@ -8,9 +8,6 @@ nltk>=3.9
 pymupdf>=1.24
 pillow>=10.0
 
-# GUI only
-customtkinter>=5.2
-CTkColorPicker>=0.9
-CTkMessagebox>=2.5
-CTkToolTip>=0.8
-CTkListbox>=1.3
+# Desktop app only
+customtkinter>=5.2,<7
+tkinterdnd2>=0.4

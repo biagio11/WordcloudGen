@@ -1,12 +1,12 @@
 name: Release
 
-# Builds the standalone Windows app and attaches it to a GitHub Release.
+# Builds the Windows app and attaches it to a draft GitHub Release.
 #
-#   git tag v1.0.0
-#   git push origin v1.0.0
+#   git tag v1.1.0
+#   git push origin v1.1.0
 #
-# Or run it by hand from the Actions tab to get a downloadable artifact
-# without publishing a release.
+# Or run it by hand from the Actions tab to get a downloadable build without
+# making a release.
 
 on:
   push:
@@ -18,11 +18,29 @@ permissions:
 
 jobs:
   build-windows:
-    name: Build Windows executable
+    name: Build Windows app
     runs-on: windows-latest
+    timeout-minutes: 45
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Check the tag matches the version in the code
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: python
+        run: |
+          import re, sys
+          tag = "${{ github.ref_name }}".lstrip("v")
+          sources = {
+              "wordcloudgen/__init__.py": r'__version__ = "([^"]+)"',
+              "pyproject.toml": r'(?m)^version = "([^"]+)"',
+          }
+          for path, pattern in sources.items():
+              found = re.search(pattern, open(path, encoding="utf-8").read())[1]
+              if found != tag:
+                  sys.exit(f"Tag v{tag} doesn't match version {found} in {path}. "
+                           "Bump the version, commit, and tag that commit.")
+          print(f"Version {tag} matches.")
 
       - uses: actions/setup-python@v5
         with:
@@ -34,19 +52,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-dev.txt
 
-      - name: Build the executable
+      - name: Build and self-test
         run: python build_exe.py
 
-      - name: Verify the build produced an executable
-        shell: pwsh
-        run: |
-          $exe = "dist/WordcloudGen/WordcloudGen.exe"
-          if (-not (Test-Path $exe)) { throw "Build failed: $exe is missing" }
-          $size = (Get-ChildItem dist/WordcloudGen -Recurse -File |
-                   Measure-Object Length -Sum).Sum / 1MB
-          "Built {0:N0} MB" -f $size
-
-      - name: Check it runs without the developer's NLTK cache
+      - name: Check both builds run without the developer's NLTK cache
         shell: pwsh
         run: |
           # Point HOME/APPDATA at an empty folder so the app can only succeed
@@ -56,13 +65,19 @@ jobs:
           New-Item -ItemType Directory -Force -Path $fake | Out-Null
           $env:USERPROFILE = $fake; $env:APPDATA = $fake; $env:HOME = $fake
 
-          # WordcloudGen.exe is a windowed (GUI subsystem) binary. PowerShell's
-          # call operator does not block on those, so $LASTEXITCODE would be read
-          # before the app had even finished. Start-Process -Wait does block.
-          $run = Start-Process -FilePath "dist\WordcloudGen\WordcloudGen.exe" `
-                               -ArgumentList "--selftest" -Wait -PassThru
-          if ($run.ExitCode -ne 0) {
-            throw "The packaged app failed its self-test (exit $($run.ExitCode))"
+          # These are windowed (GUI subsystem) binaries. PowerShell's call
+          # operator does not wait for those, so $LASTEXITCODE would be read
+          # before the app had finished. Start-Process -Wait does wait.
+          foreach ($exe in "dist\WordcloudGen\WordcloudGen.exe", "dist\WordcloudGen-portable.exe") {
+            $run = Start-Process -FilePath $exe -ArgumentList "--selftest" -PassThru
+            $null = $run.Handle  # without this, ExitCode can come back empty
+            if (-not $run.WaitForExit(300000)) {
+              $run.Kill($true)
+              throw "$exe did not finish its self-test within 5 minutes"
+            }
+            if ($run.ExitCode -ne 0) {
+              throw "$exe failed its self-test (exit $($run.ExitCode))"
+            }
           }
 
           # Only corpora count as a leak here; unrelated libraries are entitled
@@ -73,36 +88,36 @@ jobs:
             throw "The app downloaded corpora at runtime; they should be bundled"
           }
 
-      - name: Package
+      - name: List the release files
         shell: pwsh
         run: |
-          $version = "${{ github.ref_name }}"
-          if (-not $version.StartsWith("v")) { $version = "dev" }
-          Compress-Archive -Path dist/WordcloudGen/* `
-                           -DestinationPath "WordcloudGen-$version-windows-x64.zip"
-          echo "ASSET=WordcloudGen-$version-windows-x64.zip" >> $env:GITHUB_ENV
+          Get-ChildItem dist/release | ForEach-Object { "{0,-50} {1,6:N0} MB" -f $_.Name, ($_.Length / 1MB) }
+          Get-Content dist/release/SHA256SUMS.txt
 
-      - name: Upload the build artifact
+      - name: Upload the build
         uses: actions/upload-artifact@v4
         with:
           name: WordcloudGen-windows
-          path: ${{ env.ASSET }}
+          path: dist/release/*
           retention-days: 14
 
-      - name: Publish the release
+      - name: Create a draft release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: ${{ env.ASSET }}
+          files: dist/release/*
           generate_release_notes: true
           draft: true
           body: |
-            ## WordcloudGen ${{ github.ref_name }}
+            ## Download
 
-            ### Download
+            There are two ways to get the app. Neither needs Python.
 
-            Grab `${{ env.ASSET }}` below, unzip it anywhere, and run
-            **WordcloudGen.exe**. No Python install required.
+            - **The `.exe`** is the whole app in one file. Download it and double-click it. Nothing gets installed.
+            - **The `.zip`** is the same app as a folder, and it starts a few seconds faster. Unzip it anywhere and run `WordcloudGen.exe` inside.
 
-            Windows SmartScreen may warn about an unsigned app the first time:
-            choose *More info* then *Run anyway*.
+            The app isn't code-signed, so Windows SmartScreen may warn you the first time. Click *More info*, then *Run anyway*.
+
+            `SHA256SUMS.txt` has checksums if you want to verify the download.
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md) for what changed.
